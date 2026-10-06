@@ -54,7 +54,7 @@ void menuPrincipal()
 
 }
 void clientes(){
-   int opc; struct cliente cli [100] ={0}; int c;
+   int opc; struct cliente cli [1000] ={0}; int c;
 do{ 
     printf("==============================================================================\n");
     printf("||                                                                          ||\n");
@@ -75,10 +75,10 @@ do{
         if (opc==1)
     {
         system("cls");
-        printf("Digite o código do cliente para cadastro: (de 1 a 100) \n");
+        printf("Digite o código do cliente para cadastro: (de 1 a 1000) \n");
         scanf("%d",&c);
-            while(c<1 || c>100){
-                printf("Código inválido, digite um código entre 1 e 100\n");
+            while(c<1 || c>1000){
+                printf("Código inválido, digite um código entre 1 e 1000\n");
                 scanf("%d",&c);
             }
             cli[c - 1].codigo = c;
@@ -103,7 +103,7 @@ do{
         system("cls");
         int cad=0;
         printf("LISTA DE CLIENTES CADASTRADOS:\n");
-            for(int i=0;i<100;i++){
+            for(int i=0;i<1000;i++){
                 if(strlen(cli[i].nome)>0){
                     printf("Código: %d\t ||",i+1);
                     printf("Nome: %s\t ||",cli[i].nome);
@@ -125,8 +125,8 @@ do{
             
     printf("Digite o código para busca: \n");
     scanf("%d",&c);
-        if(c<1 || c>100){
-                printf("Código inválido, digite um código entre 1 e 100\n");
+        if(c<1 || c>1000){
+                printf("Código inválido, digite um código entre 1 e 1000\n");
                 scanf("%d",&c);}
         else if(strlen(cli[c-1].nome)==0){
             printf("Cliente não encontrado, pressione qualquer tecla para voltar ao menu clientes\n");
@@ -140,7 +140,28 @@ do{
                     printf("\n");
     }
         else if (opc==4){system("cls");
-    printf("AQUI FICA A ALTERAÇÃO DE CLIENTES\n");
+    printf("Digite o código do cliente para alteração: \n");
+    scanf("%d",&c);
+             if(c<1 || c>1000){
+                printf("Código inválido, digite um código entre 1 e 1000\n");
+                scanf("%d",&c);}
+            else if(strlen(cli[c-1].nome)>0){
+            cli[c - 1].codigo = c;
+            fflush(stdin);
+            printf("Digite o novo nome do cliente: \n");
+                gets(cli[c-1].nome);
+            printf("Digite o novo CPF do cliente (somente números): \n");
+                gets(cli[c-1].cpf);
+            printf("Digite o novo telefone do cliente (somente números): \n");
+                gets(cli[c-1].telefone);
+            printf("Digite o novo email do cliente: \n");
+                gets(cli[c-1].email);
+            printf("Digite a nova cidade do cliente: \n");
+                gets(cli[c-1].cidade);
+            printf("CLIENTE ALTERADO COM SUCESSO DIGITE ENTER PARA VOLTAR AO MENU CLIENTES\n");
+        system("pause");}
+            else{printf("CLIENTE NÃO ENCONTRADO, PRESSIONE QUALQUER TECLA PARA VOLTAR AO MENU CLIENTES \n");}
+            system("pause");
     }
         else if (opc==5){system("cls");
     printf("AQUI FICA A EXCLUSÃO DE CLIENTES\n");
