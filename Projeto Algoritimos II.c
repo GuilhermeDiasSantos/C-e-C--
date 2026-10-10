@@ -3,7 +3,7 @@
 #include <locale.h>
 #include <windows.h>
 #define TAM 50
-
+FILE *lista_clientes;
 struct cliente{
     char nome[TAM];
     char cpf [TAM];
@@ -12,7 +12,8 @@ struct cliente{
     char cidade[TAM];
     int codigo;
 };
-typedef struct cliente cli;
+struct cliente cli [1000]={0};
+
 
 void cabecalho()
 {
@@ -54,8 +55,10 @@ void menuPrincipal()
 
 }
 void clientes(){
-   int opc; struct cliente cli [1000] ={0}; int c;
+   int opc;  int c;
 do{ 
+    system("cls");
+    lista_clientes=fopen("clientes.txt","r");
     printf("==============================================================================\n");
     printf("||                                                                          ||\n");
     printf("||                         MENU CLIENTES                                    ||\n");
@@ -72,9 +75,13 @@ do{
     printf("||  SISTEMA: ONLINE                                      FECORE BETA v1.0   ||\n");
     printf("==============================================================================\n");
    scanf("%d",&opc);
-        if (opc==1)
-    {
+        if (opc==1){
+
+        // OPÇÃO CADASTRAR
+
         system("cls");
+        lista_clientes = fopen("clientes.txt","a");
+        // Cria o File txt para armazenar os dados dos clientes em CSV.
         printf("Digite o código do cliente para cadastro: (de 1 a 1000) \n");
         scanf("%d",&c);
             while(c<1 || c>1000){
@@ -82,6 +89,11 @@ do{
                 scanf("%d",&c);
             }
             cli[c - 1].codigo = c;
+            if(strlen(cli[c-1].nome)>0){
+                printf("Cliente já cadastrado, pressione qualquer tecla para voltar ao menu clientes\n");
+                system("pause");
+            }
+            else{
             fflush(stdin);
             printf("Digite o nome do cliente para cadastro: \n");
                 gets(cli[c-1].nome);
@@ -93,15 +105,20 @@ do{
                 gets(cli[c-1].email);
             printf("Digite a cidade do cliente para cadastro: \n");
                 gets(cli[c-1].cidade);
+                fprintf(lista_clientes,"%d;%s;%s;%s;%s;%s\n",cli[c-1].codigo,cli[c-1].nome,cli[c-1].cpf,cli[c-1].telefone,cli[c-1].email,cli[c-1].cidade);
+            fclose(lista_clientes);
+            //salva os dados do cliente no arquivo.
             printf("CLIENTE CADASTRADO COM SUCESSO DIGITE ENTER PARA VOLTAR AO MENU CLIENTES\n");
-        system("pause");
-        
+        system("pause");}
             
     }
-        else if (opc==2)
+        else if (opc==2) 
+
+        // OPÇÃO LISTAR
     {
         system("cls");
         int cad=0;
+        lista_clientes = fopen("clientes.txt","r");
         printf("LISTA DE CLIENTES CADASTRADOS:\n");
             for(int i=0;i<1000;i++){
                 if(strlen(cli[i].nome)>0){
@@ -114,7 +131,9 @@ do{
                     printf("\n");
                     cad++;
                 }
+                
             }
+            fclose(lista_clientes);
     printf("FOI ENCONTRADO O TOTAL %d DE CLIENTES CADASTRADOS PRESSIONE QUALQUER TECLA PARA VOLTAR AO MENU CLIENTES \n",cad);
    
         system("pause");
@@ -122,7 +141,9 @@ do{
     }
 
         else if (opc==3){system("cls");
-            
+
+     //OPÇÃO BUSCAR       
+        lista_clientes = fopen("clientes.txt","r");
     printf("Digite o código para busca: \n");
     scanf("%d",&c);
         if(c<1 || c>1000){
@@ -138,10 +159,15 @@ do{
                     printf("Email: %s\t ||",cli[c-1].email);
                     printf("Cidade: %s\n",cli[c-1].cidade);
                     printf("\n");
+                    fclose(lista_clientes);
+                printf("PRESSIONE QUALQUER TECLA PARA VOLTAR AO MENU CLIENTES \n");
+                system("pause");
     }
-        else if (opc==4){system("cls");
+        else if (opc==4){system("cls"); 
+            // OPÇÃO ALTERAR
     printf("Digite o código do cliente para alteração: \n");
     scanf("%d",&c);
+    lista_clientes=fopen("clientes.txt","a");
              if(c<1 || c>1000){
                 printf("Código inválido, digite um código entre 1 e 1000\n");
                 scanf("%d",&c);}
@@ -164,8 +190,28 @@ do{
             system("pause");
     }
         else if (opc==5){system("cls");
-    printf("AQUI FICA A EXCLUSÃO DE CLIENTES\n");
+        
+            //OPÇÃO EXCLUIR
+
+    printf("Digite o código do cliente que deseja excluir:\n");
+    scanf("%d",&c);
+    lista_clientes=fopen("clientes.txt","w");
+    if(c<1 || c>1000){
+                printf("Código inválido, digite um código entre 1 e 1000\n");
+                scanf("%d",&c);}
+            else if(strlen(cli[c-1].nome)>0){
+            cli[c - 1].codigo = 0;
+            strcpy(cli[c-1].nome,"");
+            strcpy(cli[c-1].cpf,"");
+            strcpy(cli[c-1].telefone,"");
+            strcpy(cli[c-1].email,"");
+            strcpy(cli[c-1].cidade,"");
+            printf("CLIENTE EXCLUÍDO COM SUCESSO DIGITE ENTER PARA VOLTAR AO MENU CLIENTES\n");
+        system("pause");}
+            else if (strlen(cli[c-1].nome)==0){printf("CLIENTE NÃO ENCONTRADO, PRESSIONE QUALQUER TECLA PARA VOLTAR AO MENU CLIENTES \n");}
+            system("pause");
     }
+
         else if (opc==0){system("cls");
     printf("VOLTANDO AO MENU PRINCIPAL\n");
     break;
