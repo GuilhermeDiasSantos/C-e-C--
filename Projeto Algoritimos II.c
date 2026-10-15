@@ -13,7 +13,50 @@ struct cliente{
     int codigo;
 };
 struct cliente cli [1000]={0};
+void carregarClientes() {
+    lista_clientes = fopen("clientes.txt", "r");
+    if (lista_clientes == NULL) return; // Arquivo ainda não foi criado
 
+    memset(cli, 0, sizeof(cli));
+    int cod;
+    char nome[TAM], cpf[TAM], tel[TAM], email[TAM], cidade[TAM];
+}
+
+// Carrega os dados salvos do arquivo
+void carregarclientes() {
+    lista_clientes = fopen("clientes.txt", "r");
+    if (lista_clientes == NULL) return; // Arquivo ainda não foi criado
+
+    memset(cli, 0, sizeof(cli));
+    int cod;
+    char nome[TAM], cpf[TAM], tel[TAM], email[TAM], cidade[TAM];
+
+    while (fscanf(lista_clientes, "%d;%49[^;];%49[^;];%49[^;];%49[^;];%49[^\n]\n", 
+                  &cod, nome, cpf, tel, email, cidade) == 6) {
+        if (cod >= 1 && cod <= 1000) {
+            cli[cod - 1].codigo = cod;
+            strcpy(cli[cod - 1].nome, nome);
+            strcpy(cli[cod - 1].cpf, cpf);
+            strcpy(cli[cod - 1].telefone, tel);
+            strcpy(cli[cod - 1].email, email);
+            strcpy(cli[cod - 1].cidade, cidade);
+        }
+    }
+}
+// Salva os dados no arquivo
+void salvarclientes() {
+    lista_clientes = fopen("clientes.txt", "w");
+    if (lista_clientes == NULL) return;
+
+    for (int i = 0; i < 1000; i++) {
+        if (cli[i].codigo > 0 && strlen(cli[i].nome) > 0) {
+            fprintf(lista_clientes, "%d;%s;%s;%s;%s;%s\n", 
+                    cli[i].codigo, cli[i].nome, cli[i].cpf, 
+                    cli[i].telefone, cli[i].email, cli[i].cidade);
+        }
+    }
+    fclose(lista_clientes);
+}
 
 void cabecalho()
 {
@@ -58,7 +101,7 @@ void clientes(){
    int opc;  int c;
 do{ 
     system("cls");
-    lista_clientes=fopen("clientes.txt","r");
+    carregarclientes();
     printf("==============================================================================\n");
     printf("||                                                                          ||\n");
     printf("||                         MENU CLIENTES                                    ||\n");
@@ -106,7 +149,7 @@ do{
             printf("Digite a cidade do cliente para cadastro: \n");
                 gets(cli[c-1].cidade);
                 fprintf(lista_clientes,"%d;%s;%s;%s;%s;%s\n",cli[c-1].codigo,cli[c-1].nome,cli[c-1].cpf,cli[c-1].telefone,cli[c-1].email,cli[c-1].cidade);
-            fclose(lista_clientes);
+            salvarclientes();
             //salva os dados do cliente no arquivo.
             printf("CLIENTE CADASTRADO COM SUCESSO DIGITE ENTER PARA VOLTAR AO MENU CLIENTES\n");
         system("pause");}
@@ -118,7 +161,6 @@ do{
     {
         system("cls");
         int cad=0;
-        lista_clientes = fopen("clientes.txt","r");
         printf("LISTA DE CLIENTES CADASTRADOS:\n");
             for(int i=0;i<1000;i++){
                 if(strlen(cli[i].nome)>0){
@@ -133,7 +175,7 @@ do{
                 }
                 
             }
-            fclose(lista_clientes);
+            salvarclientes();
     printf("FOI ENCONTRADO O TOTAL %d DE CLIENTES CADASTRADOS PRESSIONE QUALQUER TECLA PARA VOLTAR AO MENU CLIENTES \n",cad);
    
         system("pause");
@@ -143,7 +185,6 @@ do{
         else if (opc==3){system("cls");
 
      //OPÇÃO BUSCAR       
-        lista_clientes = fopen("clientes.txt","r");
     printf("Digite o código para busca: \n");
     scanf("%d",&c);
         if(c<1 || c>1000){
@@ -159,7 +200,6 @@ do{
                     printf("Email: %s\t ||",cli[c-1].email);
                     printf("Cidade: %s\n",cli[c-1].cidade);
                     printf("\n");
-                    fclose(lista_clientes);
                 printf("PRESSIONE QUALQUER TECLA PARA VOLTAR AO MENU CLIENTES \n");
                 system("pause");
     }
@@ -195,7 +235,6 @@ do{
 
     printf("Digite o código do cliente que deseja excluir:\n");
     scanf("%d",&c);
-    lista_clientes=fopen("clientes.txt","w");
     if(c<1 || c>1000){
                 printf("Código inválido, digite um código entre 1 e 1000\n");
                 scanf("%d",&c);}
@@ -206,8 +245,8 @@ do{
             strcpy(cli[c-1].telefone,"");
             strcpy(cli[c-1].email,"");
             strcpy(cli[c-1].cidade,"");
-            printf("CLIENTE EXCLUÍDO COM SUCESSO DIGITE ENTER PARA VOLTAR AO MENU CLIENTES\n");
-        system("pause");}
+            salvarclientes();
+            printf("CLIENTE EXCLUÍDO COM SUCESSO DIGITE ENTER PARA VOLTAR AO MENU CLIENTES\n");}
             else if (strlen(cli[c-1].nome)==0){printf("CLIENTE NÃO ENCONTRADO, PRESSIONE QUALQUER TECLA PARA VOLTAR AO MENU CLIENTES \n");}
             system("pause");
     }
