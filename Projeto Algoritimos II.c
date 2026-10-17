@@ -4,6 +4,7 @@
 #include <windows.h>
 #define TAM 50
 FILE *lista_clientes;
+FILE *lista_produtos;
 struct cliente{
     char nome[TAM];
     char cpf [TAM];
@@ -12,20 +13,20 @@ struct cliente{
     char cidade[TAM];
     int codigo;
 };
+struct produto{
+    char nome[TAM];
+    char categoria[TAM];
+    int estoque;
+    int codigo;
+    float preco;
+};
 struct cliente cli [1000]={0};
-void carregarClientes() {
-    lista_clientes = fopen("clientes.txt", "r");
-    if (lista_clientes == NULL) return; // Arquivo ainda não foi criado
-
-    memset(cli, 0, sizeof(cli));
-    int cod;
-    char nome[TAM], cpf[TAM], tel[TAM], email[TAM], cidade[TAM];
-}
+struct produto prod [1000]={0};
 
 // Carrega os dados salvos do arquivo
 void carregarclientes() {
     lista_clientes = fopen("clientes.txt", "r");
-    if (lista_clientes == NULL) return; // Arquivo ainda não foi criado
+    if (lista_clientes == NULL) return; 
 
     memset(cli, 0, sizeof(cli));
     int cod;
@@ -58,6 +59,40 @@ void salvarclientes() {
     fclose(lista_clientes);
 }
 
+void carregarprodutos() {
+    lista_produtos = fopen("produtos.txt", "r");
+    if (lista_produtos == NULL) return; 
+
+    memset(prod, 0, sizeof(prod));
+    int cod;
+    char nome[TAM], categoria[TAM];
+    int estoque;
+    float preco;
+
+    while (fscanf(lista_produtos, "%d;%49[^;];%49[^;];%d;%f\n", 
+                  &cod, nome, categoria, &estoque, &preco) == 5) {
+        if (cod >= 1 && cod <= 1000) {
+            prod[cod - 1].codigo = cod;
+            strcpy(prod[cod - 1].nome, nome);
+            strcpy(prod[cod - 1].categoria, categoria);
+            prod[cod - 1].estoque = estoque;
+            prod[cod - 1].preco = preco;
+        }
+    }
+}
+void salvarprodutos() {
+    lista_produtos = fopen("produtos.txt", "w");
+    if (lista_produtos == NULL) return;
+
+    for (int i = 0; i < 1000; i++) {
+        if (prod[i].codigo > 0 && strlen(prod[i].nome) > 0) {
+            fprintf(lista_produtos, "%d;%s;%s;%d;%.2f\n", 
+                    prod[i].codigo, prod[i].nome, prod[i].categoria, 
+                    prod[i].estoque, prod[i].preco);
+        }
+    }
+    fclose(lista_produtos);
+}
 void cabecalho()
 {
 
@@ -101,7 +136,6 @@ void clientes(){
    int opc;  int c;
 do{ 
     system("cls");
-    carregarclientes();
     printf("==============================================================================\n");
     printf("||                                                                          ||\n");
     printf("||                         MENU CLIENTES                                    ||\n");
@@ -123,7 +157,7 @@ do{
         // OPÇÃO CADASTRAR
 
         system("cls");
-        lista_clientes = fopen("clientes.txt","a");
+        carregarclientes();
         // Cria o File txt para armazenar os dados dos clientes em CSV.
         printf("Digite o código do cliente para cadastro: (de 1 a 1000) \n");
         scanf("%d",&c);
@@ -148,7 +182,6 @@ do{
                 gets(cli[c-1].email);
             printf("Digite a cidade do cliente para cadastro: \n");
                 gets(cli[c-1].cidade);
-                fprintf(lista_clientes,"%d;%s;%s;%s;%s;%s\n",cli[c-1].codigo,cli[c-1].nome,cli[c-1].cpf,cli[c-1].telefone,cli[c-1].email,cli[c-1].cidade);
             salvarclientes();
             //salva os dados do cliente no arquivo.
             printf("CLIENTE CADASTRADO COM SUCESSO DIGITE ENTER PARA VOLTAR AO MENU CLIENTES\n");
@@ -159,6 +192,7 @@ do{
 
         // OPÇÃO LISTAR
     {
+        carregarclientes();
         system("cls");
         int cad=0;
         printf("LISTA DE CLIENTES CADASTRADOS:\n");
@@ -175,7 +209,6 @@ do{
                 }
                 
             }
-            salvarclientes();
     printf("FOI ENCONTRADO O TOTAL %d DE CLIENTES CADASTRADOS PRESSIONE QUALQUER TECLA PARA VOLTAR AO MENU CLIENTES \n",cad);
    
         system("pause");
@@ -185,21 +218,23 @@ do{
         else if (opc==3){system("cls");
 
      //OPÇÃO BUSCAR       
+     carregarclientes();
     printf("Digite o código para busca: \n");
     scanf("%d",&c);
-        if(c<1 || c>1000){
+        while(c<1 || c>1000){
                 printf("Código inválido, digite um código entre 1 e 1000\n");
                 scanf("%d",&c);}
-        else if(strlen(cli[c-1].nome)==0){
+        if(strlen(cli[c-1].nome)==0){
             printf("Cliente não encontrado, pressione qualquer tecla para voltar ao menu clientes\n");
-            system("pause");
-        }printf("Código: %d\t ||",c+1);
+           
+        }
+        else{printf("Código: %d\t ||",c);
                     printf("Nome: %s\t ||",cli[c-1].nome);
                     printf("CPF: %s\t ||",cli[c-1].cpf);
                     printf("Telefone: %s\t ||",cli[c-1].telefone);
                     printf("Email: %s\t ||",cli[c-1].email);
                     printf("Cidade: %s\n",cli[c-1].cidade);
-                    printf("\n");
+                    printf("\n");}
                 printf("PRESSIONE QUALQUER TECLA PARA VOLTAR AO MENU CLIENTES \n");
                 system("pause");
     }
@@ -207,11 +242,11 @@ do{
             // OPÇÃO ALTERAR
     printf("Digite o código do cliente para alteração: \n");
     scanf("%d",&c);
-    lista_clientes=fopen("clientes.txt","a");
-             if(c<1 || c>1000){
+    carregarclientes();
+             while(c<1 || c>1000){
                 printf("Código inválido, digite um código entre 1 e 1000\n");
                 scanf("%d",&c);}
-            else if(strlen(cli[c-1].nome)>0){
+            if(strlen(cli[c-1].nome)>0){
             cli[c - 1].codigo = c;
             fflush(stdin);
             printf("Digite o novo nome do cliente: \n");
@@ -225,8 +260,10 @@ do{
             printf("Digite a nova cidade do cliente: \n");
                 gets(cli[c-1].cidade);
             printf("CLIENTE ALTERADO COM SUCESSO DIGITE ENTER PARA VOLTAR AO MENU CLIENTES\n");
-        system("pause");}
+            salvarclientes();
+        }
             else{printf("CLIENTE NÃO ENCONTRADO, PRESSIONE QUALQUER TECLA PARA VOLTAR AO MENU CLIENTES \n");}
+            
             system("pause");
     }
         else if (opc==5){system("cls");
@@ -235,10 +272,10 @@ do{
 
     printf("Digite o código do cliente que deseja excluir:\n");
     scanf("%d",&c);
-    if(c<1 || c>1000){
+    while(c<1 || c>1000){
                 printf("Código inválido, digite um código entre 1 e 1000\n");
                 scanf("%d",&c);}
-            else if(strlen(cli[c-1].nome)>0){
+            if(strlen(cli[c-1].nome)>0){
             cli[c - 1].codigo = 0;
             strcpy(cli[c-1].nome,"");
             strcpy(cli[c-1].cpf,"");
@@ -263,8 +300,8 @@ do{
 }
     
 void produtos(){
-int opp;
-do{
+int opp, p;
+do{system("cls");
     printf("==============================================================================\n");
     printf("||                                                                          ||\n");
     printf("||                         MENU PRODUTOS                                    ||\n");
@@ -281,14 +318,82 @@ do{
     printf("||  SISTEMA: ONLINE                                      FECORE BETA v1.0   ||\n");
     printf("==============================================================================\n");
 scanf("%d",&opp);
-        if (opp==1){system("cls");
-    printf("AQUI FICA O CADASTRO DE PRODUTOS\n");
+// OPÇÃO CADASTRAR PRODUTOS
+        if (opp==1){
+            carregarprodutos();
+            printf("Digite o código do produto para cadastro: (de 1 a 1000) \n");
+            scanf("%d",&p);
+     while(p<1 || p>1000){
+                printf("Código inválido, digite um código entre 1 e 1000\n");
+                scanf("%d",&p);
+            }
+            prod[p - 1].codigo = p;
+            if(strlen(prod[p-1].nome)>0){
+                printf("Produto já cadastrado, pressione qualquer tecla para voltar ao menu produtos\n");
+                system("pause");
+            }
+            else{
+            fflush(stdin);
+            printf("Digite o nome do produto para cadastro: \n");
+                gets(prod[p-1].nome);
+            printf("Digite a categoria do produto para cadastro: \n"); 
+                gets(prod[p-1].categoria);
+            printf("Digite o preço do produto para cadastro: \n");
+               scanf("%f",&prod[p-1].preco);
+            printf("Digite a quantidade do produto para cadastro: \n");
+                scanf("%d",&prod[p-1].estoque);
+            
+            //salva os dados do produto no arquivo.
+            printf("PRODUTO CADASTRADO COM SUCESSO DIGITE ENTER PARA VOLTAR AO MENU PRODUTOS\n");
+            salvarprodutos();
+        system("pause");}
+
+
+
     }
+    //OPÇÃO LISTAR PRODUTOS
         else if (opp==2){system("cls");
-    printf("AQUI FICA A LISTA DE PRODUTOS\n");
+        carregarprodutos();
+        system("cls");
+        int cad=0;
+        printf("LISTA DE PRODUTOS CADASTRADOS:\n");
+            for(int i=0;i<1000;i++){
+                if(strlen(prod[i].nome)>0){
+                    printf("Código: %d\t ||",i+1);
+                    printf("Nome: %s\t ||",prod[i].nome);
+                    printf("Categoria: %s\t ||",prod[i].categoria);
+                    printf("Preço: %.2f\t ||",prod[i].preco);
+                    printf("Estoque: %d\n",prod[i].estoque);
+                    printf("\n");
+                    cad++;
+                }
+                
+            }
+    printf("FOI ENCONTRADO O TOTAL %d DE PRODUTOS CADASTRADOS PRESSIONE QUALQUER TECLA PARA VOLTAR AO MENU PRODUTOS \n",cad);
+   
+        system("pause");
+        
     }
+    //OPÇÃO BUSCAR PRODUTOS
         else if (opp==3){system("cls");
-    printf("AQUI FICA A BUSCA DE PRODUTOS\n");
+            carregarprodutos();
+    printf("Digite o código para busca: \n");
+    scanf("%d",&p);
+        while(p<1 || p>1000){
+                printf("Código inválido, digite um código entre 1 e 1000\n");
+                scanf("%d",&p);}
+        if(strlen(prod[p-1].nome)==0){
+            printf("Produto não encontrado, pressione qualquer tecla para voltar ao menu produtos\n");
+           
+        }
+        else{printf("Código: %d\t ||",p);
+                    printf("Nome: %s\t ||",prod[p-1].nome);
+                    printf("Categoria: %s\t ||",prod[p-1].categoria);
+                    printf("Preço: %.2f\t ||",prod[p-1].preco);
+                    printf("Estoque: %d\n",prod[p-1].estoque);
+                    printf("\n");}
+                printf("PRESSIONE QUALQUER TECLA PARA VOLTAR AO MENU PRODUTOS \n");
+                system("pause");
     }
         else if (opp==4){system("cls");
     printf("AQUI FICA A ALTERAÇÃO DE PRODUTOS\n");
@@ -297,6 +402,7 @@ scanf("%d",&opp);
     printf("AQUI FICA A EXCLUSÃO DE PRODUTOS\n");
     }
         else if (opp==0){system("cls");
+
     printf("VOLTANDO AO MENU PRINCIPAL\n");
     break;
     }
