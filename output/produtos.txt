@@ -1,2 +1,1 @@
-2;2;2;2;2.00
-10;Gasolina;Liquidos;0;99.00
+10;Gasolina;Liquidos;0;100.00

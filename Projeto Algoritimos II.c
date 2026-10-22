@@ -5,6 +5,7 @@
 #define TAM 50
 FILE *lista_clientes;
 FILE *lista_produtos;
+FILE *lista_vendas;
 struct cliente{
     char nome[TAM];
     char cpf [TAM];
@@ -20,6 +21,14 @@ struct produto{
     int codigo;
     float preco;
 };
+struct venda{
+    int codigo_venda;
+    int codigo_cliente;
+    int codigo_produto;
+    int quantidade;
+    float valor_total;
+};
+struct venda ven [1000]={0};
 struct cliente cli [1000]={0};
 struct produto prod [1000]={0};
 
@@ -93,6 +102,39 @@ void salvarprodutos() {
     }
     fclose(lista_produtos);
 }
+void carregarvendas() {
+    lista_vendas = fopen("vendas.txt", "r");
+    if (lista_vendas == NULL) return;
+
+    memset(ven, 0, sizeof(ven));
+    int cod_v, cod_c, cod_p, qtd;
+    float v_total;
+
+    while (fscanf(lista_vendas, "%d;%d;%d;%d;%f\n", &cod_v, &cod_c, &cod_p, &qtd, &v_total) == 5) {
+        if (cod_v >= 1 && cod_v <= 1000) {
+            ven[cod_v - 1].codigo_venda = cod_v;
+            ven[cod_v - 1].codigo_cliente = cod_c;
+            ven[cod_v - 1].codigo_produto = cod_p;
+            ven[cod_v - 1].quantidade = qtd;
+            ven[cod_v - 1].valor_total = v_total;
+        }
+    }
+    fclose(lista_vendas);
+}
+
+void salvarvendas() {
+    lista_vendas = fopen("vendas.txt", "w");
+    if (lista_vendas == NULL) return;
+
+    for (int i = 0; i < 1000; i++) {
+        if (ven[i].codigo_venda > 0) {
+            fprintf(lista_vendas, "%d;%d;%d;%d;%.2f\n", 
+                    ven[i].codigo_venda, ven[i].codigo_cliente, 
+                    ven[i].codigo_produto, ven[i].quantidade, ven[i].valor_total);
+        }
+    }
+    fclose(lista_vendas);
+}
 void cabecalho()
 {
 
@@ -125,7 +167,10 @@ void menuPrincipal()
     printf("||                                                                          ||\n");
     printf("||        [1] CLIENTES                    [2] PRODUTOS                      ||\n");
     printf("||                                                                          ||\n");
-    printf("||        [3] ESTATÍSTICAS                [0] SAIR                          ||\n");
+    printf("||        [3] VENDAS                      [4] RELATÓRIOS                    ||\n");
+    printf("||                                                                          ||\n");
+    printf("||        [0] SAIR                                                          ||\n");
+    printf("||                                                                          ||\n");
     printf("||                                                                          ||\n");
     printf("==============================================================================\n");
     printf("||  SISTEMA: ONLINE                                      FECORE BETA v1.0   ||\n");
@@ -319,7 +364,7 @@ do{system("cls");
     printf("==============================================================================\n");
 scanf("%d",&opp);
 // OPÇÃO CADASTRAR PRODUTOS
-        if (opp==1){
+        if (opp==1){system("cls");
             carregarprodutos();
             printf("Digite o código do produto para cadastro: (de 1 a 1000) \n");
             scanf("%d",&p);
@@ -396,12 +441,49 @@ scanf("%d",&opp);
                 system("pause");
     }
         else if (opp==4){system("cls");
-    printf("AQUI FICA A ALTERAÇÃO DE PRODUTOS\n");
+    printf("Digite o código do produto para alteração: \n");
+    scanf("%d",&p);
+    carregarprodutos();
+             while(p<1 || p>1000){
+                printf("Código inválido, digite um código entre 1 e 1000\n");
+                scanf("%d",&p);}
+            if(strlen(prod[p-1].nome)>0){
+            prod[p - 1].codigo = p;
+            fflush(stdin);
+            printf("Digite o novo nome do produto: \n");
+                gets(prod[p-1].nome);
+            printf("Digite a nova categoria do produto: \n");
+                gets(prod[p-1].categoria);
+            printf("Digite o novo preço do produto: \n");
+                scanf("%f",&prod[p-1].preco);
+            printf("Digite o novo estoque do produto: \n");
+                scanf("%d",&prod[p-1].estoque);            
+            printf("PRODUTO ALTERADO COM SUCESSO DIGITE ENTER PARA VOLTAR AO MENU PRODUTOS\n");
+            salvarprodutos();
+        }
+            else{printf("PRODUTO NÃO ENCONTRADO, PRESSIONE QUALQUER TECLA PARA VOLTAR AO MENU PRODUTOS \n");}
+            
+            system("pause");
     }
-        else if (opp==5){system("cls");
-    printf("AQUI FICA A EXCLUSÃO DE PRODUTOS\n");
+        else if(opp==5){system("cls");
+            carregarprodutos();
+    printf("Digite o código do produto que deseja excluir:\n");
+    scanf("%d",&p);
+    while(p<1 || p>1000){
+                printf("Código inválido, digite um código entre 1 e 1000\n");
+                scanf("%d",&p);}
+            if(strlen(prod[p-1].nome)>0){
+            prod[p - 1].codigo = 0;
+            strcpy(prod[p-1].nome,"");
+            strcpy(prod[p-1].categoria,"");
+            salvarprodutos();
+            printf("PRODUTO EXCLUÍDO COM SUCESSO DIGITE ENTER PARA VOLTAR AO MENU PRODUTOS\n");}
+            else if (strlen(prod[p-1].nome)==0){
+                printf("PRODUTO NÃO ENCONTRADO, PRESSIONE QUALQUER TECLA PARA VOLTAR AO MENU PRODUTOS \n");}
+            system("pause");
     }
-        else if (opp==0){system("cls");
+    
+    else if(opp==0){system("cls");
 
     printf("VOLTANDO AO MENU PRINCIPAL\n");
     break;
@@ -411,13 +493,128 @@ scanf("%d",&opp);
     }
 }while (opp!=0);
 }
-
-void estatisticas(){
-int ope;
+void vendas(){
+int opv,v,cod;
 do{
     printf("==============================================================================\n");
     printf("||                                                                          ||\n");
-    printf("||                         MENU ESTATÍSTICAS                                ||\n");
+    printf("||                         MENU VENDAS                                      ||\n");
+    printf("||                                                                          ||\n");
+    printf("||  Selecione uma opção:                                                    ||\n");
+    printf("||                                                                          ||\n");
+    printf("||        [1] REGISTRAR VENDA                 [2] LISTAR VENDAS             ||\n");
+    printf("||                                                                          ||\n");
+    printf("||        [0] VOLTAR                                                        ||\n");
+    printf("||                                                                          ||\n");
+    printf("==============================================================================\n");
+    printf("||  SISTEMA: ONLINE                                      FECORE BETA v1.0   ||\n");
+    printf("==============================================================================\n"); 
+scanf("%d",&opv);
+    if (opv == 1){system("cls");
+        carregarclientes();
+        carregarprodutos();
+        carregarvendas();
+        printf("Digite o código do cliente para a venda:\n");
+        scanf("%d", &cod);
+        while (cod < 1 || cod > 1000) {
+            printf("Código inválido, digite um código entre 1 e 1000\n");
+            scanf("%d", &cod);
+            }
+    if (strlen(cli[cod - 1].nome) == 0) {
+            printf("Cliente não encontrado, pressione qualquer tecla para voltar ao menu vendas\n");
+            system("pause");
+            } 
+    else{
+        int qtd;
+        int num_venda = 1;
+        printf("Digite o código do produto para venda:\n");
+        scanf("%d", &v);
+        while (v < 1 || v > 1000) {
+        printf("Código inválido, digite um código entre 1 e 1000\n");
+            scanf("%d", &v);}
+        if (strlen(prod[v - 1].nome) == 0) {
+                    printf("Produto não encontrado, pressione qualquer tecla para voltar ao menu vendas\n");
+                    system("pause");
+                } 
+        else {
+            printf("Digite a quantidade desejada:\n");
+            scanf("%d", &qtd);
+
+        while (qtd <= 0) {
+            printf("Quantidade inválida, digite um valor maior que 0:\n");
+            scanf("%d", &qtd);}
+        if (qtd > prod[v - 1].estoque) {
+        printf("Estoque insuficiente! Estoque atual: %d unidades\n", prod[v - 1].estoque);
+        printf("PRESSIONE QUALQUER TECLA PARA VOLTAR AO MENU VENDAS\n");
+        system("pause");} 
+        else{
+        prod[v - 1].estoque -= qtd;         
+         printf("VENDA REGISTRADA COM SUCESSO, PRESSIONE QUALQUER TECLA PARA VOLTAR AO MENU VENDAS\n");
+    system("pause");    
+        while (ven[num_venda - 1].codigo_venda > 0 && num_venda <= 1000) {num_venda++;}}
+                        
+        
+        salvarprodutos();
+
+                    //substitui os dados
+
+        ven[num_venda - 1].codigo_venda = num_venda;
+        ven[num_venda - 1].codigo_cliente = cod;
+        ven[num_venda - 1].codigo_produto = v;
+        ven[num_venda - 1].quantidade = qtd;
+        ven[num_venda - 1].valor_total = qtd * prod[v - 1].preco;
+
+        salvarprodutos();
+        salvarvendas();}}
+   
+    }
+
+else if (opv == 2) {
+            // OPÇÃO LISTAR VENDAS
+        carregarclientes();
+        carregarprodutos();
+        carregarvendas();
+        system("cls");
+        int total_vendas = 0;
+        printf("LISTA DE VENDAS REGISTRADAS:\n\n");
+            for (int i = 0; i < 1000; i++) {
+            if (ven[i].codigo_venda > 0) {
+            int c_cod = ven[i].codigo_cliente - 1;
+            int p_cod = ven[i].codigo_produto - 1;
+
+            printf("Cód. Venda: %d || ", ven[i].codigo_venda);
+            printf("Cliente: %s (Cód %d) || ", cli[c_cod].nome, ven[i].codigo_cliente);
+            printf("Produto: %s (Cód %d) || ", prod[p_cod].nome, ven[i].codigo_produto);
+            printf("Qtd: %d || ", ven[i].quantidade);
+            printf("Total: R$ %.2f\n", ven[i].valor_total);
+            total_vendas++;
+                }
+            }
+            printf("\nTOTAL DE VENDAS REALIZADAS: %d\n", total_vendas);
+            printf("PRESSIONE QUALQUER TECLA PARA VOLTAR AO MENU VENDAS\n");
+            system("pause");
+        }
+        else if (opv == 0) {
+            system("cls");
+            printf("VOLTANDO AO MENU PRINCIPAL\n");
+            break;
+        }
+        else {
+            system("cls");
+            printf("OPÇÃO INVÁLIDA\n\n");
+            system("pause");
+        }
+
+
+}
+while (opv!=0);
+}
+void relatorios(){
+int opr;
+do{
+    printf("==============================================================================\n");
+    printf("||                                                                          ||\n");
+    printf("||                         MENU RELATÓRIOS                                  ||\n");
     printf("||                                                                          ||\n");
     printf("||  Selecione uma opção:                                                    ||\n");
     printf("||                                                                          ||\n");
@@ -430,27 +627,27 @@ do{
     printf("==============================================================================\n");
     printf("||  SISTEMA: ONLINE                                      FECORE BETA v1.0   ||\n");
     printf("==============================================================================\n");
-scanf("%d",&ope);
-        if (ope==1){system("cls");
+scanf("%d",&opr);
+        if (opr==1){system("cls");
     printf("AQUI FICA O RELATÓRIO DE CLIENTES\n");
     }
-        else if (ope==2){system("cls");
+        else if (opr==2){system("cls");
     printf("AQUI FICA O RELATÓRIO DE PRODUTOS\n");
     }
-        else if (ope==3){system("cls");
+        else if (opr==3){system("cls");
     printf("AQUI FICA O RELATÓRIO DE ESTOQUE\n");
     }
-        else if (ope==4){system("cls");
+        else if (opr==4){system("cls");
     printf("AQUI FICA O RELATÓRIO DE VENDAS\n");
     }
-        else if (ope==0){system("cls");
+        else if (opr==0){system("cls");
     printf("VOLTANDO AO MENU PRINCIPAL\n");
     break;
     }
         else{system("cls");
     printf("OPÇÃO INVÁLIDA\n\n");
     }
-}while (ope!=0);
+}while (opr!=0);
 }
 
 int main()
@@ -470,8 +667,11 @@ else if(op==2){system("cls");
     produtos();
     }    
 else if(op==3){system("cls");
-    estatisticas();
+    vendas();
     }
+else if(op==4){system("csls");
+    relatorios();
+}
 else if(op==0){system("cls");
     printf("\nSAINDO...\n");
     break;
